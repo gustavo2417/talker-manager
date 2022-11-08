@@ -22,10 +22,10 @@ app.get('/talker', async (_req, res) => {
   const pathName = path.resolve(__dirname, 'talker.json');
   const talkers = JSON.parse(await fs.readFile(pathName, 'utf-8'));
 
-  res.status(HTTP_OK_STATUS).send(talkers)
+  res.status(HTTP_OK_STATUS).send(talkers);
 });
 
-app.get('/talker/:id',async (req, res) => {
+app.get('/talker/:id', async (req, res) => {
   const id = Number(req.params.id);
   const pathName = path.resolve(__dirname, 'talker.json');
   const talkers = JSON.parse(await fs.readFile(pathName, 'utf-8'));
@@ -34,6 +34,6 @@ app.get('/talker/:id',async (req, res) => {
   if (talker) {
     res.json(talker);
   } else {
-    res.status(404).send({ message: "Pessoa palestrante não encontrada" });
+    res.status(404).send({ message: 'Pessoa palestrante não encontrada' });
   }
 });
