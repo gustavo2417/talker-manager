@@ -6,7 +6,13 @@ const path = require('path');
 const validate = require('./utils/validation');
 
 const pathName = path.resolve(__dirname, 'talker.json');
-const { bodyValidation, formatValidation } = validate;
+const { bodyValidation,
+  ValidatePost,
+  validateWatchedAt,
+  validateRate,
+  validateAut,
+  validateTalk,
+} = validate;
 
 const app = express();
 app.use(bodyParser.json());
@@ -41,6 +47,41 @@ app.get('/talker/:id', async (req, res) => {
   }
 });
 
-app.post('/login', bodyValidation, formatValidation, (_req, res) => {
+app.post('/login', bodyValidation, (_req, res) => {
   res.status(HTTP_OK_STATUS).json({ token: crypto.randomBytes(8).toString('hex') });
+});
+
+app.post('/talker', validateAut, ValidatePost, validateTalk,
+validateWatchedAt, validateRate, async (req, res) => {
+  const talkers = JSON.parse(await fs.readFile(pathName, 'utf-8'));
+  const id = talkers[talkers.length - 1].id + 1;
+  const newTalker = { id, ...req.body };
+
+  talkers.push(newTalker);
+  await fs.writeFile(pathName, JSON.stringify(talkers));
+  return res.status(201).json(newTalker);
+});
+
+app.put('/talker/:id', validateAut, ValidatePost, validateTalk,
+validateWatchedAt, validateRate, async (req, res) => {
+  const talkers = JSON.parse(await fs.readFile(pathName, 'utf-8'));
+  const id = Number(req.params.id);
+  const talker = talkers.find((t) => t.id === id);
+  const item = talkers.indexOf(talker);
+  const updated = { id, ...req.body };
+
+  talkers.splice(item, 1, updated);
+  await fs.writeFile(pathName, JSON.stringify(talkers));
+  res.status(200).json(updated);
+});
+
+app.delete('/talker/:id', validateAut, async (req, res) => {
+  const id = Number(req.params.id);
+  const talkers = JSON.parse(await fs.readFile(pathName, 'utf-8'));
+  const talker = talkers.find((item) => item.id === id);
+  const item = talkers.indexOf(talker);
+
+  talkers.splice(item);
+  await fs.writeFile(pathName, JSON.stringify(talker));
+  res.sendStatus(204);
 });
