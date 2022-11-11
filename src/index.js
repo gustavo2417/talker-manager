@@ -31,14 +31,28 @@ app.listen(PORT, () => {
 
 app.get('/talker', async (_req, res) => {
   const talkers = JSON.parse(await fs.readFile(pathName, 'utf-8'));
-
+  
   res.status(HTTP_OK_STATUS).send(talkers);
+});
+
+app.get('/talker/search', validateAut, async (req, res) => {
+  const searchTerm = req.query.q;
+  const talkers = JSON.parse(await fs.readFile(pathName, 'utf-8'));
+  const talker = talkers.filter((item) => 
+  item.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  if (searchTerm === undefined) {
+    res.status(HTTP_OK_STATUS).json(talkers);
+  } else if (talker.length === 0) {
+    res.status(HTTP_OK_STATUS).json([]);
+  } else {
+    res.status(HTTP_OK_STATUS).json(talker);
+  }
 });
 
 app.get('/talker/:id', async (req, res) => {
   const id = Number(req.params.id);
   const talkers = JSON.parse(await fs.readFile(pathName, 'utf-8'));
-
   const talker = talkers.find((t) => t.id === id);
   if (talker) {
     res.json(talker);
